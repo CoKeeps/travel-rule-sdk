@@ -6,10 +6,6 @@ export interface SDKConfig {
   logger?: (message: string, data?: any) => void;
 }
 
-export interface TravelData {
-  [key: string]: any;
-}
-
 export interface AccessTokenResponse {
   access_token: string;
   token_type: string;
