@@ -25,6 +25,7 @@
     "scripts": {
         "build": "tsc",
         "prebuild": "rm -rf dist",
+        "prepare": "npm run build",
         "postinstall": "npm run build",
         "widget": "npm run build && vite",
         "widget:dev": "npm run build && vite",
