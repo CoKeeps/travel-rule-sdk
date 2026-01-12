@@ -169,6 +169,7 @@ For comprehensive documentation, see [here](https://github.com/CoKeeps/travel-ru
 
 ## License
 
+Travel Rule SDK is released under the [MIT License](https://opensource.org/licenses/MIT).
 
 
 ---
