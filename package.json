@@ -24,7 +24,6 @@
     "scripts": {
         "build": "tsc",
         "prebuild": "rm -rf dist",
-        "postinstall": "node scripts/postinstall.cjs",
         "widget": "npm run build && vite",
         "widget:dev": "npm run build && vite",
         "widget:build": "npm run build && vite build",

@@ -1,0 +1,20 @@
+services:
+  widget:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: travel-sdk-widget
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.travel-sdk.description=Travel SDK Widget Demo"
+      - "com.travel-sdk.version=1.0.0"
+
+
