@@ -559,6 +559,7 @@ const handleFileUpload = (event: Event) => {
         const validatedKeys = sdk.value!.validateVaspKeys(parsed);
         
         fileJsonData.value = validatedKeys;
+        sdk.value!.setVaspKeys(validatedKeys);
         accessToken.value = null;
         accessTokenResult.value = null;
         tokenExpiresAt.value = null;
@@ -591,14 +592,6 @@ const getMessage = async () => {
     };
     return;
   }
-  
-  if(!accessToken.value) {
-    result.value = {
-      type: 'error',
-      message: 'Please get an access token first',
-    };
-    return;
-  }
 
   if(!fileJsonData.value) {
     result.value = {
@@ -618,8 +611,17 @@ const getMessage = async () => {
   
   try {
     loading.value = true;
-    const dpopProof = await sdk.value.getDpopProof(fileJsonData.value, 'get-message', accessToken.value.access_token, messageId.value);
-    const message = await sdk.value.getMessage(dpopProof, accessToken.value.access_token, messageId.value, fileJsonData.value);
+    const message = await sdk.value.getMessageWithAuth(fileJsonData.value, messageId.value);
+    
+    if (sdk.value.getVaspKeys()) {
+      const token = await sdk.value.getAccessToken();
+      accessToken.value = token;
+      if (token && token.expires_in) {
+        const expiresInSeconds = typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
+        tokenExpiresAt.value = Date.now() + (expiresInSeconds * 1000);
+        currentTime.value = Date.now();
+      }
+    }
     result.value = {
       type: 'success',
       message: 'Message retrieved successfully',
@@ -683,15 +685,7 @@ const sendData = async () => {
     };
     return;
   }
-  
-  if(!accessToken.value) {
-    result.value = {
-      type: 'error',
-      message: 'Please get an access token first',
-    };
-    return;
-  }
-  
+
   if(!fileJsonData.value) {
     result.value = {
       type: 'error',
@@ -703,8 +697,17 @@ const sendData = async () => {
   try {
     loading.value = true;
     const cleanedData = convertEmptyStringsToUndefined(formData.value);
-    const dpopProof = await sdk.value.getDpopProof(fileJsonData.value, 'send-message', accessToken.value.access_token, cleanedData.messageId, 'POST');
-    const message = await sdk.value.sendMessage(cleanedData as any, dpopProof, accessToken.value.access_token);
+    const message = await sdk.value.sendMessageWithAuth(fileJsonData.value, cleanedData as any);
+    
+    if (sdk.value.getVaspKeys()) {
+      const token = await sdk.value.getAccessToken();
+      accessToken.value = token;
+      if (token && token.expires_in) {
+        const expiresInSeconds = typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
+        tokenExpiresAt.value = Date.now() + (expiresInSeconds * 1000);
+        currentTime.value = Date.now();
+      }
+    }
     result.value = {
       type: 'success',
       message: 'Message sent successfully',
@@ -775,9 +778,7 @@ const getAccessToken = async () => {
   try {
     loading.value = true;
 
-    const dpopProof = await sdk.value.getDpopProof(fileJsonData.value, 'token');
-
-    const token = await sdk.value.getAccessToken(fileJsonData.value, dpopProof);
+    const token = await sdk.value.authenticate(fileJsonData.value);
     accessToken.value = token;
 
     if (token && token.expires_in) {

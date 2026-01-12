@@ -10,7 +10,19 @@ export interface TravelData {
   [key: string]: any;
 }
 
-export interface SDKResponse<T = any> {
-  data?: T;
-  error?: string;
+export interface AccessTokenResponse {
+  access_token: string;
+  token_type: string;
+  expires_in: number;
+  scope: string;
+}
+
+export interface SendMessageResponse {
+  messageId: string;
+  createdAt: string;
+}
+
+export interface GetMessageRawResponse {
+  messageId: string;
+  payloadJwe: string;
 }
