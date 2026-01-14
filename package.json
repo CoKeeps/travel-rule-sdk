@@ -1,6 +1,6 @@
 {
   "name": "@cokeeps/travel-rule-sdk",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Travel Rule SDK for VASPs to exchange required originator/beneficiary data securely and meet global compliance requirements.",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
