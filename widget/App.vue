@@ -398,7 +398,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { TravelSDKClient, type VaspKeys } from 'travel-sdk';
+import { TravelSDKClient, type VaspKeys, APIError } from '@cokeeps/travel-rule-sdk';
 
 const endpoint = ref('');
 const sdk = ref<TravelSDKClient | null>(null);
@@ -629,10 +629,29 @@ const getMessage = async () => {
     };
   } catch (error) {
     console.error('Error getting message:', error);
-    result.value = {
-      type: 'error',
-      message: error instanceof Error ? error.message : 'Failed to get message',
-    };
+    if (error instanceof APIError) {
+      let message = error.errorDescription || error.message;
+      if (error.isValidationError() && error.getValidationErrors()) {
+        const validationErrors = error.getValidationErrors()!;
+        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
+      }
+      result.value = {
+        type: 'error',
+        message: message,
+        data: {
+          code: error.code,
+          httpStatus: error.httpStatus,
+          category: error.category,
+          retryable: error.retryable,
+        },
+      };
+    } else {
+      result.value = {
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to get message',
+      };
+    }
   } finally {
     loading.value = false;
   }
@@ -715,10 +734,29 @@ const sendData = async () => {
     };
   } catch (error) {
     console.error('Error sending message:', error);
-    result.value = {
-      type: 'error',
-      message: error instanceof Error ? error.message : 'Failed to send message',
-    };
+    if (error instanceof APIError) {
+      let message = error.errorDescription || error.message;
+      if (error.isValidationError() && error.getValidationErrors()) {
+        const validationErrors = error.getValidationErrors()!;
+        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
+      }
+      result.value = {
+        type: 'error',
+        message: message,
+        data: {
+          code: error.code,
+          httpStatus: error.httpStatus,
+          category: error.category,
+          retryable: error.retryable,
+        },
+      };
+    } else {
+      result.value = {
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to send message',
+      };
+    }
   } finally {
     loading.value = false;
   }
@@ -798,10 +836,29 @@ const getAccessToken = async () => {
     console.error('Error getting access token:', error);
     accessToken.value = null;
     tokenExpiresAt.value = null;
-    accessTokenResult.value = {
-      type: 'error',
-      message: error instanceof Error ? error.message : 'Failed to get access token',
-    };
+    if (error instanceof APIError) {
+      let message = error.errorDescription || error.message;
+      if (error.isValidationError() && error.getValidationErrors()) {
+        const validationErrors = error.getValidationErrors()!;
+        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
+      }
+      accessTokenResult.value = {
+        type: 'error',
+        message: message,
+        data: {
+          code: error.code,
+          httpStatus: error.httpStatus,
+          category: error.category,
+          retryable: error.retryable,
+        },
+      };
+    } else {
+      accessTokenResult.value = {
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to get access token',
+      };
+    }
   } finally {
     loading.value = false;
   }
