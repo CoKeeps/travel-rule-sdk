@@ -1,11 +1,12 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 import { SDKConfig, AccessTokenResponse, SendMessageResponse, GetMessageRawResponse } from './types';
 
 import { validateVaspKeysWithError, validateMessageFormData, MessageFormData } from './utils/validate';
 import { genClientAssertion, genDpopProof, generateBody } from './utils/generate';
-import { SDKError, ValidationError } from './errors';
+import { SDKError, ValidationError, APIError } from './errors';
 import { decryptJwePayload } from './utils/decrypt';
 import type { VaspKeys } from './index';
+import type { ErrorResponse } from './error-codes';
 
 const API_PATHS = {
   TOKEN: '/api/oauth/token',
@@ -61,6 +62,19 @@ export class TravelSDKClient {
         return Promise.reject(error);
       }
     );
+
+    this.client.interceptors.response.use(
+      (response) => response,
+      (error: AxiosError) => {
+        const apiError = this.parseApiError(error);
+        this.logger('API error', {
+          code: apiError instanceof APIError ? apiError.code : 'unknown',
+          httpStatus: apiError instanceof APIError ? apiError.httpStatus : error.response?.status,
+          message: apiError.message,
+        });
+        return Promise.reject(apiError);
+      }
+    );
   }
 
   private validateEndpoint(endpoint: string, fieldName: string = 'endpoint'): void {
@@ -91,14 +105,61 @@ export class TravelSDKClient {
     }
   }
 
-  private handleError(error: unknown, defaultMessage: string): never {
-    if (error instanceof SDKError || error instanceof ValidationError) {
-      throw error;
+
+  private parseApiError(error: unknown): SDKError | APIError {
+    if (error instanceof SDKError || error instanceof ValidationError || error instanceof APIError) {
+      return error;
     }
-    throw new SDKError(
-      error instanceof Error ? error.message : defaultMessage,
+
+    if (axios.isAxiosError(error)) {
+      const axiosError = error as AxiosError<ErrorResponse | any>;
+      const response = axiosError.response;
+
+      if (response?.data && typeof response.data === 'object' && 'error' in response.data) {
+        const errorData = response.data as ErrorResponse;
+        return new APIError(errorData, response);
+      }
+
+      if (!response) {
+        return new SDKError(
+          `Network error: ${axiosError.message}`,
+          axiosError
+        );
+      }
+
+      let errorMessage = axiosError.message;
+      if (response.data) {
+        if (typeof response.data === 'string') {
+          errorMessage = response.data;
+        } else if (typeof response.data === 'object' && response.data.message) {
+          errorMessage = response.data.message;
+        } else if (typeof response.data === 'object' && response.data.error_description) {
+          errorMessage = response.data.error_description;
+        }
+      }
+
+      const status = response.status;
+      const statusText = response.statusText || 'Unknown error';
+      
+      const message = errorMessage !== axiosError.message 
+        ? errorMessage 
+        : `HTTP ${status} ${statusText}`;
+      
+      return new SDKError(
+        message,
+        axiosError
+      );
+    }
+
+    return new SDKError(
+      error instanceof Error ? error.message : 'Unknown error occurred',
       error instanceof Error ? error : undefined
     );
+  }
+
+  private handleError(error: unknown, defaultMessage: string): never {
+    const parsedError = this.parseApiError(error);
+    throw parsedError;
   }
 
   private getTargetUrl(purpose: 'token' | 'get-message' | 'send-message', messageID?: string): string {
