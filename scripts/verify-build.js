@@ -59,15 +59,15 @@ const dtsPath = join(distDir, 'index.d.cts');
 if (existsSync(dtsPath)) {
   const dtsContent = readFileSync(dtsPath, 'utf-8');
   let allExportsFound = true;
-  
+
   for (const exportName of requiredExports) {
     const patterns = [
       new RegExp(`export\\s+(class|function|const|type|interface)\\s+${exportName}`, 'g'),
       new RegExp(`export\\s*\\{[^}]*\\b${exportName}\\b`, 'g'),
     ];
-    
-    const found = patterns.some(pattern => pattern.test(dtsContent));
-    
+
+    const found = patterns.some((pattern) => pattern.test(dtsContent));
+
     if (found) {
       console.log(`${exportName}`);
     } else {
@@ -75,7 +75,7 @@ if (existsSync(dtsPath)) {
       allExportsFound = false;
     }
   }
-  
+
   if (!allExportsFound) {
     console.error('\nSome required exports are missing. Rebuild: npm run build');
     process.exit(1);

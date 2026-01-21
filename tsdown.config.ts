@@ -11,4 +11,3 @@ export default defineConfig({
   external: ['axios', 'jose', 'uuid', 'zod'],
   target: false,
 });
-

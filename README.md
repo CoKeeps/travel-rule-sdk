@@ -33,9 +33,30 @@ const client = createTravelSDK({
 // Set VASP keys
 const vaspKeys = {
   vasp_id: 'your-vasp-id',
-  sig: { priv: { /* JWK */ }, pub: { /* JWK */ } },
-  dpop: { priv: { /* JWK */ }, pub: { /* JWK */ } },
-  enc: { priv: { /* JWK */ }, pub: { /* JWK */ } },
+  sig: {
+    priv: {
+      /* JWK */
+    },
+    pub: {
+      /* JWK */
+    },
+  },
+  dpop: {
+    priv: {
+      /* JWK */
+    },
+    pub: {
+      /* JWK */
+    },
+  },
+  enc: {
+    priv: {
+      /* JWK */
+    },
+    pub: {
+      /* JWK */
+    },
+  },
 };
 
 // Send a message
@@ -57,19 +78,23 @@ const response = await client.sendMessageWithAuth(vaspKeys, {
   originator: {
     type: 'NATURAL',
     name: {
-      nameIdentifier: [{
-        primaryIdentifier: 'John',
-        nameIdentifierType: 'LEGL',
-      }],
+      nameIdentifier: [
+        {
+          primaryIdentifier: 'John',
+          nameIdentifierType: 'LEGL',
+        },
+      ],
     },
   },
   beneficiary: {
     type: 'NATURAL',
     name: {
-      nameIdentifier: [{
-        primaryIdentifier: 'Jane',
-        nameIdentifierType: 'LEGL',
-      }],
+      nameIdentifier: [
+        {
+          primaryIdentifier: 'Jane',
+          nameIdentifierType: 'LEGL',
+        },
+      ],
     },
   },
 });
@@ -85,10 +110,10 @@ console.log('Retrieved message:', message);
 
 ```typescript
 interface SDKConfig {
-  endpoint: string;                    // Required: API endpoint URL
-  timeout?: number;                     // Optional: Request timeout (default: 30000ms)
-  headers?: Record<string, string>;    // Optional: Additional headers
-  debug?: boolean;                      // Optional: Enable debug logging
+  endpoint: string; // Required: API endpoint URL
+  timeout?: number; // Optional: Request timeout (default: 30000ms)
+  headers?: Record<string, string>; // Optional: Additional headers
+  debug?: boolean; // Optional: Enable debug logging
   logger?: (message: string, data?: any) => void; // Optional: Custom logger
 }
 ```
@@ -127,18 +152,21 @@ try {
 ## API Methods
 
 ### Authentication
+
 - `authenticate(vaspKeys)` - Authenticate and get access token
 - `getAccessToken()` - Get OAuth access token
 - `getClientAssertion(client_id)` - Generate client assertion JWT
 - `getDpopProof(purpose, accessToken?, messageID?)` - Generate DPoP proof
 
 ### Messages
+
 - `sendMessage(messageData, accessToken)` - Send a message
 - `sendMessageWithAuth(vaspKeys, messageData)` - Send with auto-auth
 - `getMessage(accessToken, messageID)` - Retrieve a message
 - `getMessageWithAuth(vaspKeys, messageID)` - Get with auto-auth
 
 ### Configuration
+
 - `setVaspKeys(vaspKeys)` - Set VASP keys
 - `getVaspKeys()` - Get current VASP keys
 - `updateEndpoint(endpoint)` - Update API endpoint
@@ -170,7 +198,6 @@ For comprehensive documentation, see [here](https://github.com/CoKeeps/travel-ru
 ## License
 
 Travel Rule SDK is released under the [MIT License](https://opensource.org/licenses/MIT).
-
 
 ---
 
