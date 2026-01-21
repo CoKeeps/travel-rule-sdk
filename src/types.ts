@@ -3,7 +3,7 @@ export interface SDKConfig {
   timeout?: number;
   headers?: Record<string, string>;
   debug?: boolean;
-  logger?: (message: string, data?: any) => void;
+  logger?: (message: string, data?: unknown) => void;
 }
 
 export interface AccessTokenResponse {

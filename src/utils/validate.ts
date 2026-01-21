@@ -1,66 +1,90 @@
 import { z } from 'zod';
-import { 
-  addressTypeEnum, 
-  nameIdentifierTypeEnum, 
+import {
+  addressTypeEnum,
+  nameIdentifierTypeEnum,
   nationalIdentifierTypeEnum,
   transferDirectionEnum,
   vaspIdentifierTypeEnum,
-  personTypeEnum
+  personTypeEnum,
 } from './type';
+import type { KeyEntry } from './type';
 
-export const validateKeyEntry = (entry: any, entryName: string = ''): { valid: boolean; error?: string } => {
-    if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
-      return { valid: false, error: `${entryName} must be an object` };
-    }
-    
-    if (entry.priv === undefined || entry.priv === null || typeof entry.priv !== 'object' || Array.isArray(entry.priv)) {
-      return { valid: false, error: `${entryName}.priv must be an object` };
-    }
-    
-    if (entry.pub === undefined || entry.pub === null || typeof entry.pub !== 'object' || Array.isArray(entry.pub)) {
-      return { valid: false, error: `${entryName}.pub must be an object` };
-    }
-    
-    return { valid: true };
-  };
+export const validateKeyEntry = (
+  entry: Required<KeyEntry>,
+  entryName: string = '',
+): { valid: boolean; error?: string } => {
+  if (!entry || typeof entry !== 'object' || Array.isArray(entry)) {
+    return { valid: false, error: `${entryName} must be an object` };
+  }
 
-export const validateVaspKeysWithError = (data: any): { valid: boolean; error?: string } => {
-    if (!data || typeof data !== 'object') {
-      return { valid: false, error: 'Data must be an object' };
-    }
+  if (
+    entry.priv === undefined ||
+    entry.priv === null ||
+    typeof entry.priv !== 'object' ||
+    Array.isArray(entry.priv)
+  ) {
+    return { valid: false, error: `${entryName}.priv must be an object` };
+  }
 
-    if (typeof data.vasp_id !== 'string' || !data.vasp_id.trim()) {
-      return { valid: false, error: 'vasp_id is required and must be a non-empty string' };
-    }
+  if (
+    entry.pub === undefined ||
+    entry.pub === null ||
+    typeof entry.pub !== 'object' ||
+    Array.isArray(entry.pub)
+  ) {
+    return { valid: false, error: `${entryName}.pub must be an object` };
+  }
 
-    if (!data.sig || typeof data.sig !== 'object') {
-      return { valid: false, error: 'sig is required and must be an object' };
-    }
-    if (!data.dpop || typeof data.dpop !== 'object') {
-      return { valid: false, error: 'dpop is required and must be an object' };
-    }
-    if (!data.enc || typeof data.enc !== 'object') {
-      return { valid: false, error: 'enc is required and must be an object' };
-    }
+  return { valid: true };
+};
 
-    const sigValidation = validateKeyEntry(data.sig, 'sig');
+export type VaspKeysWithMaterial = {
+  vasp_id: string;
+  sig: Required<KeyEntry>;
+  dpop: Required<KeyEntry>;
+  enc: Required<KeyEntry>;
+};
 
-    if (!sigValidation.valid) {
-      return sigValidation;
-    }
-    const dpopValidation = validateKeyEntry(data.dpop, 'dpop');
-    if (!dpopValidation.valid) {
-      return dpopValidation;
-    }
-    const encValidation = validateKeyEntry(data.enc, 'enc');
-    if (!encValidation.valid) {
-      return encValidation;
-    }
+export const validateVaspKeysWithError = (
+  data: Partial<VaspKeysWithMaterial>,
+): { valid: boolean; error?: string } => {
+  if (!data || typeof data !== 'object') {
+    return { valid: false, error: 'Data must be an object' };
+  }
 
-    return { valid: true };
-  };
+  if (typeof data.vasp_id !== 'string' || !data.vasp_id.trim()) {
+    return { valid: false, error: 'vasp_id is required and must be a non-empty string' };
+  }
 
-const yyyyMmDd = z.string()
+  if (!data.sig || typeof data.sig !== 'object') {
+    return { valid: false, error: 'sig is required and must be an object' };
+  }
+  if (!data.dpop || typeof data.dpop !== 'object') {
+    return { valid: false, error: 'dpop is required and must be an object' };
+  }
+  if (!data.enc || typeof data.enc !== 'object') {
+    return { valid: false, error: 'enc is required and must be an object' };
+  }
+
+  const sigValidation = validateKeyEntry(data.sig, 'sig');
+
+  if (!sigValidation.valid) {
+    return sigValidation;
+  }
+  const dpopValidation = validateKeyEntry(data.dpop, 'dpop');
+  if (!dpopValidation.valid) {
+    return dpopValidation;
+  }
+  const encValidation = validateKeyEntry(data.enc, 'enc');
+  if (!encValidation.valid) {
+    return encValidation;
+  }
+
+  return { valid: true };
+};
+
+const yyyyMmDd = z
+  .string()
   .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')
   .refine((s) => {
     const [y, m, d] = s.split('-').map(Number);
@@ -82,21 +106,25 @@ const MessageFormDataSchema = z.object({
     originatingAddress: z.string(),
     beneficiaryAddress: z.string(),
     memoOrTag: z.string().optional(),
-    internalRef: z.string().optional()
+    internalRef: z.string().optional(),
   }),
   originatingVasp: z.object({
     vaspName: z.string(),
-    vaspIdentifier: z.object({
-      type: vaspIdentifierTypeEnum,
-      value: z.string()
-    }).optional()
+    vaspIdentifier: z
+      .object({
+        type: vaspIdentifierTypeEnum,
+        value: z.string(),
+      })
+      .optional(),
   }),
   beneficiaryVasp: z.object({
     vaspName: z.string(),
-    vaspIdentifier: z.object({
-      type: vaspIdentifierTypeEnum,
-      value: z.string()
-    }).optional()
+    vaspIdentifier: z
+      .object({
+        type: vaspIdentifierTypeEnum,
+        value: z.string(),
+      })
+      .optional(),
   }),
   originator: z.object({
     type: personTypeEnum,
@@ -105,31 +133,40 @@ const MessageFormDataSchema = z.object({
         z.object({
           primaryIdentifier: z.string(),
           secondaryIdentifier: z.string().optional(),
-          nameIdentifierType: nameIdentifierTypeEnum
-        })
-      )
+          nameIdentifierType: nameIdentifierTypeEnum,
+        }),
+      ),
     }),
     customerIdentification: z.string().optional(),
     accountNumber: z.string().optional(),
-    geographicAddress: z.array(z.object({
-      addressType: addressTypeEnum.optional(),
-      streetName: z.string().optional(),
-      buildingNumber: z.string().optional(),
-      townName: z.string().optional(),
-      countrySubDivision: z.string().optional(),
-      postCode: z.string().optional(),
-      country: z.string()
-    })),
-    nationalIdentification: z.array(z.object({
-      nationalIdentifier: z.string(),
-      nationalIdentifierType: nationalIdentifierTypeEnum.optional(),
-      countryOfIssue: z.string()
-    })).optional(),
-    dateAndPlaceOfBirth: z.object({
-      birthDate: yyyyMmDd,
-      cityOfBirth: z.string(),
-      countryOfBirth: z.string()
-    }).partial().optional()
+    geographicAddress: z.array(
+      z.object({
+        addressType: addressTypeEnum.optional(),
+        streetName: z.string().optional(),
+        buildingNumber: z.string().optional(),
+        townName: z.string().optional(),
+        countrySubDivision: z.string().optional(),
+        postCode: z.string().optional(),
+        country: z.string(),
+      }),
+    ),
+    nationalIdentification: z
+      .array(
+        z.object({
+          nationalIdentifier: z.string(),
+          nationalIdentifierType: nationalIdentifierTypeEnum.optional(),
+          countryOfIssue: z.string(),
+        }),
+      )
+      .optional(),
+    dateAndPlaceOfBirth: z
+      .object({
+        birthDate: yyyyMmDd,
+        cityOfBirth: z.string(),
+        countryOfBirth: z.string(),
+      })
+      .partial()
+      .optional(),
   }),
   beneficiary: z.object({
     type: personTypeEnum,
@@ -138,23 +175,25 @@ const MessageFormDataSchema = z.object({
         z.object({
           primaryIdentifier: z.string(),
           secondaryIdentifier: z.string().optional(),
-          nameIdentifierType: nameIdentifierTypeEnum
-        })
-      )
+          nameIdentifierType: nameIdentifierTypeEnum,
+        }),
+      ),
     }),
     customerIdentification: z.string().optional(),
     accountNumber: z.string().optional(),
   }),
-  contact: z.object({
-    complianceEmail: z.string(),
-    supportReference: z.string()
-  }).optional()
+  contact: z
+    .object({
+      complianceEmail: z.string(),
+      supportReference: z.string(),
+    })
+    .optional(),
 });
 
 const fieldNameMap: Record<string, string> = {
-  'ivms101Version': 'IVMS101 Version',
-  'messageId': 'Message ID',
-  'createdAt': 'Created At',
+  ivms101Version: 'IVMS101 Version',
+  messageId: 'Message ID',
+  createdAt: 'Created At',
   'transfer.direction': 'Transfer Direction',
   'transfer.asset': 'Asset',
   'transfer.amount': 'Amount',
@@ -184,35 +223,34 @@ const getFieldName = (path: string): string => {
   if (fieldNameMap[path]) {
     return fieldNameMap[path];
   }
-  
+
   for (const [key, value] of Object.entries(fieldNameMap)) {
     if (path.includes(key)) {
       return value;
     }
   }
-  
-  return path.split('.').map(part => {
-    return part.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase()).trim();
-  }).join(' > ');
+
+  return path
+    .split('.')
+    .map((part) => {
+      return part
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+    })
+    .join(' > ');
 };
 
-const formatInvalidTypeError = (fieldName: string, received: string, errorMsg: string): string => {
-  if (received === 'undefined') {
-    return `${fieldName} is required`;
-  }
-  if (received === 'null') {
-    return `${fieldName} cannot be null`;
-  }
-  if (errorMsg.includes('Expected string')) {
-    return `${fieldName} must be a valid text value`;
-  }
+const formatInvalidTypeError = (fieldName: string, errorMsg: string): string => {
+  const msg = errorMsg.toLowerCase();
+  if (msg.includes('required') || msg.includes('undefined')) return `${fieldName} is required`;
+  if (msg.includes('null')) return `${fieldName} cannot be null`;
+  if (errorMsg.includes('Expected string')) return `${fieldName} must be a valid text value`;
   return `${fieldName}: ${errorMsg}`;
 };
 
-const formatTooSmallError = (fieldName: string, errorType: string): string => {
-  if (errorType === 'array') {
-    return `${fieldName} must have at least one item`;
-  }
+const formatTooSmallError = (fieldName: string, errorMsg: string): string => {
+  if (errorMsg.toLowerCase().includes('array')) return `${fieldName} must have at least one item`;
   return `${fieldName} is too small`;
 };
 
@@ -253,37 +291,36 @@ const formatCustomError = (fieldName: string, errorMsg: string): string => {
 };
 
 const formatZodError = (error: z.ZodError): string => {
-  const firstError = error.issues[0] as any;
-  const path = firstError.path.join('.');
-  const received = firstError.received ?? '';
-  const code = firstError.code;
-  const errorMsg = firstError.message;
+  const issue = error.issues[0];
+  if (!issue) return 'Validation failed. Please check your input and try again.';
+
+  const path = issue.path.join('.');
   const fieldName = getFieldName(path);
 
-  if (code === 'invalid_type') {
-    return formatInvalidTypeError(fieldName, received, errorMsg);
+  switch (issue.code) {
+    case 'invalid_type':
+      return formatInvalidTypeError(fieldName, issue.message);
+
+    case 'too_small':
+      return formatTooSmallError(fieldName, issue.message);
+
+    case 'custom':
+      return formatCustomError(fieldName, issue.message);
+
+    default:
+      if (issue.message.includes('Invalid enum') || issue.message.toLowerCase().includes('enum')) {
+        return formatEnumError(fieldName, path, '');
+      }
+      if (issue.message.includes('Expected YYYY-MM-DD') || issue.message.toLowerCase().includes('regex')) {
+        return formatRegexError(fieldName, path);
+      }
+      return `${fieldName}: ${issue.message}`;
   }
-  
-  if (code === 'too_small') {
-    return formatTooSmallError(fieldName, firstError.type);
-  }
-  
-  if (errorMsg.includes('Invalid enum') || errorMsg.includes('enum')) {
-    return formatEnumError(fieldName, path, received);
-  }
-  
-  if (errorMsg.includes('regex') || errorMsg.includes('Expected YYYY-MM-DD')) {
-    return formatRegexError(fieldName, path);
-  }
-  
-  if (code === 'custom') {
-    return formatCustomError(fieldName, errorMsg);
-  }
-  
-  return `${fieldName}: ${errorMsg}`;
 };
 
-export const validateMessageFormData = (data: any): { valid: boolean; error?: string } => {
+export const validateMessageFormData = (
+  data: MessageFormData,
+): { valid: boolean; error?: string } => {
   try {
     MessageFormDataSchema.parse(data);
     return { valid: true };

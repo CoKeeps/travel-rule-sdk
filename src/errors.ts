@@ -1,16 +1,10 @@
-import type { 
-  ErrorCode, 
-  ErrorCodeDefinition, 
-  ErrorCategory, 
-  ErrorResponse 
-} from './error-codes';
-import { 
-  getErrorCode, 
-  getCanonicalErrorCode, 
-  isRetryableError
-} from './error-codes';
+import { AxiosResponse } from 'axios';
+import type { ErrorCode, ErrorCodeDefinition, ErrorCategory, ErrorResponse } from './error-codes';
+import { getErrorCode, getCanonicalErrorCode, isRetryableError } from './error-codes';
 
-function setupError(error: Error, errorName: string, constructor: Function): void {
+type ErrorConstructorFn = new (...args: unknown[]) => Error;
+
+function setupError(error: Error, errorName: string, constructor: ErrorConstructorFn): void {
   error.name = errorName;
   if (Error.captureStackTrace) {
     Error.captureStackTrace(error, constructor);
@@ -18,16 +12,22 @@ function setupError(error: Error, errorName: string, constructor: Function): voi
 }
 
 export class SDKError extends Error {
-  constructor(message: string, public readonly cause?: Error) {
+  constructor(
+    message: string,
+    public readonly cause?: Error,
+  ) {
     super(message);
-    setupError(this, 'SDKError', SDKError);
+    setupError(this, 'SDKError', SDKError as ErrorConstructorFn);
   }
 }
 
 export class ValidationError extends SDKError {
-  constructor(message: string, public readonly field?: string) {
+  constructor(
+    message: string,
+    public readonly field?: string,
+  ) {
     super(message);
-    setupError(this, 'ValidationError', ValidationError);
+    setupError(this, 'ValidationError', ValidationError as ErrorConstructorFn);
   }
 }
 
@@ -42,18 +42,18 @@ export class APIError extends SDKError {
 
   constructor(
     errorResponse: ErrorResponse,
-    public readonly response?: any
+    public readonly response?: AxiosResponse,
   ) {
     const code = errorResponse.error;
     const definition = getErrorCode(code);
-    
+
     let message: string;
     let httpStatus: number;
     let category: ErrorCategory;
     let retryable: boolean;
     let canonicalCode: ErrorCode;
     let errorDescription: string;
-    
+
     if (!definition) {
       message = errorResponse.error_description || `API error: ${code}`;
       httpStatus = 500;
@@ -71,7 +71,7 @@ export class APIError extends SDKError {
     }
 
     super(message);
-    
+
     this.code = code;
     this.httpStatus = httpStatus;
     this.category = category;
@@ -79,8 +79,8 @@ export class APIError extends SDKError {
     this.canonicalCode = canonicalCode;
     this.errorDescription = errorDescription;
     this.validationErrors = errorResponse.errors;
-    
-    setupError(this, 'APIError', APIError);
+
+    setupError(this, 'APIError', APIError as ErrorConstructorFn);
   }
 
   getDefinition(): ErrorCodeDefinition | undefined {

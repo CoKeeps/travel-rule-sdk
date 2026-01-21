@@ -1,18 +1,11 @@
 <template>
   <div class="container">
     <h1>Travel Rule Widget</h1>
-    
+
     <div class="form-section">
       <label for="endpoint">API Endpoint:</label>
-      <input 
-        v-model="endpoint"
-        type="text" 
-        id="endpoint" 
-      />
-      <button 
-        @click="initializeOrUpdateEndpoint()" 
-        class="update-endpoint-button"
-      >
+      <input id="endpoint" v-model="endpoint" type="text" />
+      <button class="update-endpoint-button" @click="initializeOrUpdateEndpoint()">
         {{ sdk ? 'Update Endpoint' : 'Initialize SDK' }}
       </button>
     </div>
@@ -22,44 +15,41 @@
         <h3 class="form-group-title">Certificate & Authentication</h3>
         <div class="form-section">
           <label for="certificateFile">Upload Certificate (.json file only):</label>
-          <input 
-            @change="handleFileUpload"
-            type="file" 
-            id="certificateFile" 
-            accept=".json"
-          />
+          <input id="certificateFile" type="file" accept=".json" @change="handleFileUpload" />
           <div v-if="fileName" class="file-info">
             Uploaded: <strong>{{ fileName }}</strong>
           </div>
-          <div v-else class="file-info" style="color: #999; font-style: italic;">
+          <div v-else class="file-info" style="color: #999; font-style: italic">
             No file uploaded
           </div>
         </div>
-        <button 
-          @click="getAccessToken()" 
-          :disabled="loading || !fileJsonData"
-          class="send-button"
-        >
+        <button :disabled="loading || !fileJsonData" class="send-button" @click="getAccessToken()">
           {{ accessToken ? 'Refresh Access Token' : 'Get Access Token' }}
         </button>
-        <div v-if="accessTokenResult" :class="['result', accessTokenResult.type]" style="margin-top: 15px;">
+        <div
+          v-if="accessTokenResult"
+          :class="['result', accessTokenResult.type]"
+          style="margin-top: 15px"
+        >
           <strong>{{ accessTokenResult.message }}</strong>
-          <pre v-if="accessTokenResult.data">{{ JSON.stringify(accessTokenResult.data, null, 2) }}</pre>
+          <pre v-if="accessTokenResult.data">{{
+            JSON.stringify(accessTokenResult.data, null, 2)
+          }}</pre>
         </div>
       </div>
     </div>
 
     <div v-if="sdk" class="tabs">
       <div class="tabs-left">
-        <button 
-          @click="activeTab = 'inbound'"
+        <button
           :class="['tab-button', { active: activeTab === 'inbound' }]"
+          @click="activeTab = 'inbound'"
         >
           Get Message
         </button>
-        <button 
-          @click="activeTab = 'outbound'"
+        <button
           :class="['tab-button', { active: activeTab === 'outbound' }]"
+          @click="activeTab = 'outbound'"
         >
           Send Message
         </button>
@@ -72,11 +62,7 @@
     <div v-if="sdk && activeTab === 'inbound'" class="tab-content">
       <div class="form-section">
         <label for="messageId">Message ID:</label>
-        <input 
-          v-model="messageId"
-          type="text" 
-          id="messageId"
-        />
+        <input id="messageId" v-model="messageId" type="text" />
       </div>
     </div>
 
@@ -85,15 +71,15 @@
         <h3 class="form-group-title">Message Information</h3>
         <div class="form-section">
           <label for="ivms101Version">IVMS101 Version: <span class="required">*</span></label>
-          <input v-model="formData.ivms101Version" type="text" id="ivms101Version" required />
+          <input id="ivms101Version" v-model="formData.ivms101Version" type="text" required />
         </div>
         <div class="form-section">
           <label for="outboundMessageId">Message ID: <span class="required">*</span></label>
-          <input v-model="formData.messageId" type="text" id="outboundMessageId" required />
+          <input id="outboundMessageId" v-model="formData.messageId" type="text" required />
         </div>
         <div class="form-section">
           <label for="createdAt">Created At: <span class="required">*</span></label>
-          <input v-model="createdAtDatetimeLocal" type="datetime-local" id="createdAt" required />
+          <input id="createdAt" v-model="createdAtDatetimeLocal" type="datetime-local" required />
         </div>
       </div>
 
@@ -101,7 +87,7 @@
         <h3 class="form-group-title">Transfer Information</h3>
         <div class="form-section">
           <label for="direction">Direction: <span class="required">*</span></label>
-          <select v-model="formData.transfer.direction" id="direction" required>
+          <select id="direction" v-model="formData.transfer.direction" required>
             <option value="">Select...</option>
             <option value="OUTBOUND">Outbound - Outgoing Transfer</option>
             <option value="INBOUND">Inbound - Incoming Transfer</option>
@@ -110,37 +96,51 @@
         <div class="form-row">
           <div class="form-section">
             <label for="asset">Asset: <span class="required">*</span></label>
-            <input v-model="formData.transfer.asset" type="text" id="asset" required />
+            <input id="asset" v-model="formData.transfer.asset" type="text" required />
           </div>
           <div class="form-section">
             <label for="amount">Amount: <span class="required">*</span></label>
-            <input v-model="formData.transfer.amount" type="text" id="amount" required />
+            <input id="amount" v-model="formData.transfer.amount" type="text" required />
           </div>
         </div>
         <div class="form-section">
           <label for="network">Network: <span class="required">*</span></label>
-          <input v-model="formData.transfer.network" type="text" id="network" required />
+          <input id="network" v-model="formData.transfer.network" type="text" required />
         </div>
         <div class="form-section">
           <label for="txHash">Transaction Hash: <span class="required">*</span></label>
-          <input v-model="formData.transfer.txHash" type="text" id="txHash" required />
+          <input id="txHash" v-model="formData.transfer.txHash" type="text" required />
         </div>
         <div class="form-section">
-          <label for="originatingAddress">Originating Address: <span class="required">*</span></label>
-          <input v-model="formData.transfer.originatingAddress" type="text" id="originatingAddress" required />
+          <label for="originatingAddress"
+            >Originating Address: <span class="required">*</span></label
+          >
+          <input
+            id="originatingAddress"
+            v-model="formData.transfer.originatingAddress"
+            type="text"
+            required
+          />
         </div>
         <div class="form-section">
-          <label for="beneficiaryAddress">Beneficiary Address: <span class="required">*</span></label>
-          <input v-model="formData.transfer.beneficiaryAddress" type="text" id="beneficiaryAddress" required />
+          <label for="beneficiaryAddress"
+            >Beneficiary Address: <span class="required">*</span></label
+          >
+          <input
+            id="beneficiaryAddress"
+            v-model="formData.transfer.beneficiaryAddress"
+            type="text"
+            required
+          />
         </div>
         <div class="form-row">
           <div class="form-section">
             <label for="memoOrTag">Memo or Tag:</label>
-            <input v-model="formData.transfer.memoOrTag" type="text" id="memoOrTag" />
+            <input id="memoOrTag" v-model="formData.transfer.memoOrTag" type="text" />
           </div>
           <div class="form-section">
             <label for="internalRef">Your Internal Reference:</label>
-            <input v-model="formData.transfer.internalRef" type="text" id="internalRef" />
+            <input id="internalRef" v-model="formData.transfer.internalRef" type="text" />
           </div>
         </div>
       </div>
@@ -149,12 +149,20 @@
         <h3 class="form-group-title">Originating VASP</h3>
         <div class="form-section">
           <label for="originatingVaspName">VASP Name: <span class="required">*</span></label>
-          <input v-model="formData.originatingVasp.vaspName" type="text" id="originatingVaspName" required />
+          <input
+            id="originatingVaspName"
+            v-model="formData.originatingVasp.vaspName"
+            type="text"
+            required
+          />
         </div>
         <div class="form-row">
           <div class="form-section">
             <label for="originatingVaspIdentifierType">Identifier Type:</label>
-            <select v-model="formData.originatingVasp.vaspIdentifier.type" id="originatingVaspIdentifierType">
+            <select
+              id="originatingVaspIdentifierType"
+              v-model="formData.originatingVasp.vaspIdentifier.type"
+            >
               <option value="">Select...</option>
               <option value="LEI">LEI - Legal Entity Identifier (ISO 17442)</option>
               <option value="BIC">BIC - Business Identifier Code / SWIFT (ISO 9362)</option>
@@ -164,7 +172,11 @@
           </div>
           <div class="form-section">
             <label for="originatingVaspIdentifierValue">Identifier Value:</label>
-            <input v-model="formData.originatingVasp.vaspIdentifier.value" type="text" id="originatingVaspIdentifierValue" />
+            <input
+              id="originatingVaspIdentifierValue"
+              v-model="formData.originatingVasp.vaspIdentifier.value"
+              type="text"
+            />
           </div>
         </div>
       </div>
@@ -173,12 +185,20 @@
         <h3 class="form-group-title">Beneficiary VASP</h3>
         <div class="form-section">
           <label for="beneficiaryVaspName">VASP Name: <span class="required">*</span></label>
-          <input v-model="formData.beneficiaryVasp.vaspName" type="text" id="beneficiaryVaspName" required />
+          <input
+            id="beneficiaryVaspName"
+            v-model="formData.beneficiaryVasp.vaspName"
+            type="text"
+            required
+          />
         </div>
         <div class="form-row">
           <div class="form-section">
             <label for="beneficiaryVaspIdentifierType">Identifier Type:</label>
-            <select v-model="formData.beneficiaryVasp.vaspIdentifier.type" id="beneficiaryVaspIdentifierType">
+            <select
+              id="beneficiaryVaspIdentifierType"
+              v-model="formData.beneficiaryVasp.vaspIdentifier.type"
+            >
               <option value="">Select...</option>
               <option value="LEI">LEI - Legal Entity Identifier (ISO 17442)</option>
               <option value="BIC">BIC - Business Identifier Code / SWIFT (ISO 9362)</option>
@@ -188,7 +208,11 @@
           </div>
           <div class="form-section">
             <label for="beneficiaryVaspIdentifierValue">Identifier Value:</label>
-            <input v-model="formData.beneficiaryVasp.vaspIdentifier.value" type="text" id="beneficiaryVaspIdentifierValue" />
+            <input
+              id="beneficiaryVaspIdentifierValue"
+              v-model="formData.beneficiaryVasp.vaspIdentifier.value"
+              type="text"
+            />
           </div>
         </div>
       </div>
@@ -197,7 +221,7 @@
         <h3 class="form-group-title">Originator</h3>
         <div class="form-section">
           <label for="originatorType">Type: <span class="required">*</span></label>
-          <select v-model="formData.originator.type" id="originatorType" required>
+          <select id="originatorType" v-model="formData.originator.type" required>
             <option value="">Select...</option>
             <option value="NATURAL">NATURAL - Individual (Natural Person)</option>
             <option value="LEGAL">LEGAL - Organization/Entity (Legal Person)</option>
@@ -207,16 +231,33 @@
           <label>Name Identifier:</label>
           <div class="form-row">
             <div class="form-section">
-              <label for="originatorPrimaryIdentifier">Primary Identifier: <span class="required">*</span></label>
-              <input v-model="formData.originator.name.nameIdentifier[0].primaryIdentifier" type="text" id="originatorPrimaryIdentifier" required />
+              <label for="originatorPrimaryIdentifier"
+                >Primary Identifier: <span class="required">*</span></label
+              >
+              <input
+                id="originatorPrimaryIdentifier"
+                v-model="formData.originator.name.nameIdentifier[0].primaryIdentifier"
+                type="text"
+                required
+              />
             </div>
             <div class="form-section">
               <label for="originatorSecondaryIdentifier">Secondary Identifier:</label>
-              <input v-model="formData.originator.name.nameIdentifier[0].secondaryIdentifier" type="text" id="originatorSecondaryIdentifier" />
+              <input
+                id="originatorSecondaryIdentifier"
+                v-model="formData.originator.name.nameIdentifier[0].secondaryIdentifier"
+                type="text"
+              />
             </div>
             <div class="form-section">
-              <label for="originatorNameIdentifierType">Name Identifier Type: <span class="required">*</span></label>
-              <select v-model="formData.originator.name.nameIdentifier[0].nameIdentifierType" id="originatorNameIdentifierType" required>
+              <label for="originatorNameIdentifierType"
+                >Name Identifier Type: <span class="required">*</span></label
+              >
+              <select
+                id="originatorNameIdentifierType"
+                v-model="formData.originator.name.nameIdentifier[0].nameIdentifierType"
+                required
+              >
                 <option value="">Select...</option>
                 <option value="LEGL">LEGL - Legal/Registered Name</option>
                 <option value="ALIA">ALIA - Alias Name</option>
@@ -228,11 +269,19 @@
         <div class="form-row">
           <div class="form-section">
             <label for="originatorCustomerIdentification">Customer Identification:</label>
-            <input v-model="formData.originator.customerIdentification" type="text" id="originatorCustomerIdentification" />
+            <input
+              id="originatorCustomerIdentification"
+              v-model="formData.originator.customerIdentification"
+              type="text"
+            />
           </div>
           <div class="form-section">
             <label for="originatorAccountNumber">Account Number:</label>
-            <input v-model="formData.originator.accountNumber" type="text" id="originatorAccountNumber" />
+            <input
+              id="originatorAccountNumber"
+              v-model="formData.originator.accountNumber"
+              type="text"
+            />
           </div>
         </div>
         <div class="form-section">
@@ -240,7 +289,10 @@
           <div class="form-row">
             <div class="form-section">
               <label for="originatorAddressType">Address Type:</label>
-              <select v-model="formData.originator.geographicAddress[0].addressType" id="originatorAddressType">
+              <select
+                id="originatorAddressType"
+                v-model="formData.originator.geographicAddress[0].addressType"
+              >
                 <option value="">Select...</option>
                 <option value="HOME">HOME - Residential/Home Address</option>
                 <option value="BIZZ">BIZZ - Business Address</option>
@@ -249,31 +301,56 @@
             </div>
             <div class="form-section">
               <label for="originatorStreetName">Street Name:</label>
-              <input v-model="formData.originator.geographicAddress[0].streetName" type="text" id="originatorStreetName" />
+              <input
+                id="originatorStreetName"
+                v-model="formData.originator.geographicAddress[0].streetName"
+                type="text"
+              />
             </div>
           </div>
           <div class="form-row">
             <div class="form-section">
               <label for="originatorBuildingNumber">Building Number:</label>
-              <input v-model="formData.originator.geographicAddress[0].buildingNumber" type="text" id="originatorBuildingNumber" />
+              <input
+                id="originatorBuildingNumber"
+                v-model="formData.originator.geographicAddress[0].buildingNumber"
+                type="text"
+              />
             </div>
             <div class="form-section">
               <label for="originatorTownName">Town Name:</label>
-              <input v-model="formData.originator.geographicAddress[0].townName" type="text" id="originatorTownName" />
+              <input
+                id="originatorTownName"
+                v-model="formData.originator.geographicAddress[0].townName"
+                type="text"
+              />
             </div>
           </div>
           <div class="form-row">
             <div class="form-section">
               <label for="originatorCountrySubDivision">Country Sub Division:</label>
-              <input v-model="formData.originator.geographicAddress[0].countrySubDivision" type="text" id="originatorCountrySubDivision" />
+              <input
+                id="originatorCountrySubDivision"
+                v-model="formData.originator.geographicAddress[0].countrySubDivision"
+                type="text"
+              />
             </div>
             <div class="form-section">
               <label for="originatorPostCode">Post Code:</label>
-              <input v-model="formData.originator.geographicAddress[0].postCode" type="text" id="originatorPostCode" />
+              <input
+                id="originatorPostCode"
+                v-model="formData.originator.geographicAddress[0].postCode"
+                type="text"
+              />
             </div>
             <div class="form-section">
               <label for="originatorCountry">Country: <span class="required">*</span></label>
-              <input v-model="formData.originator.geographicAddress[0].country" type="text" id="originatorCountry" required />
+              <input
+                id="originatorCountry"
+                v-model="formData.originator.geographicAddress[0].country"
+                type="text"
+                required
+              />
             </div>
           </div>
         </div>
@@ -282,11 +359,18 @@
           <div class="form-row">
             <div class="form-section">
               <label for="originatorNationalIdentifier">National Identifier:</label>
-              <input v-model="formData.originator.nationalIdentification[0].nationalIdentifier" type="text" id="originatorNationalIdentifier" />
+              <input
+                id="originatorNationalIdentifier"
+                v-model="formData.originator.nationalIdentification[0].nationalIdentifier"
+                type="text"
+              />
             </div>
             <div class="form-section">
               <label for="originatorNationalIdentifierType">Identifier Type:</label>
-              <select v-model="formData.originator.nationalIdentification[0].nationalIdentifierType" id="originatorNationalIdentifierType">
+              <select
+                id="originatorNationalIdentifierType"
+                v-model="formData.originator.nationalIdentification[0].nationalIdentifierType"
+              >
                 <option value="">Select...</option>
                 <option value="ARNU">ARNU - Alien Registration Number</option>
                 <option value="CCPT">CCPT - Passport Number</option>
@@ -300,7 +384,11 @@
             </div>
             <div class="form-section">
               <label for="originatorCountryOfIssue">Country of Issue:</label>
-              <input v-model="formData.originator.nationalIdentification[0].countryOfIssue" type="text" id="originatorCountryOfIssue" />
+              <input
+                id="originatorCountryOfIssue"
+                v-model="formData.originator.nationalIdentification[0].countryOfIssue"
+                type="text"
+              />
             </div>
           </div>
         </div>
@@ -309,15 +397,27 @@
           <div class="form-row">
             <div class="form-section">
               <label for="originatorBirthDate">Birth Date (YYYY-MM-DD):</label>
-              <input v-model="formData.originator.dateAndPlaceOfBirth.birthDate" type="date" id="originatorBirthDate" />
+              <input
+                id="originatorBirthDate"
+                v-model="formData.originator.dateAndPlaceOfBirth.birthDate"
+                type="date"
+              />
             </div>
             <div class="form-section">
               <label for="originatorCityOfBirth">City of Birth:</label>
-              <input v-model="formData.originator.dateAndPlaceOfBirth.cityOfBirth" type="text" id="originatorCityOfBirth" />
+              <input
+                id="originatorCityOfBirth"
+                v-model="formData.originator.dateAndPlaceOfBirth.cityOfBirth"
+                type="text"
+              />
             </div>
             <div class="form-section">
               <label for="originatorCountryOfBirth">Country of Birth:</label>
-              <input v-model="formData.originator.dateAndPlaceOfBirth.countryOfBirth" type="text" id="originatorCountryOfBirth" />
+              <input
+                id="originatorCountryOfBirth"
+                v-model="formData.originator.dateAndPlaceOfBirth.countryOfBirth"
+                type="text"
+              />
             </div>
           </div>
         </div>
@@ -327,7 +427,7 @@
         <h3 class="form-group-title">Beneficiary</h3>
         <div class="form-section">
           <label for="beneficiaryType">Type: <span class="required">*</span></label>
-          <select v-model="formData.beneficiary.type" id="beneficiaryType" required>
+          <select id="beneficiaryType" v-model="formData.beneficiary.type" required>
             <option value="">Select...</option>
             <option value="NATURAL">NATURAL - Individual (Natural Person)</option>
             <option value="LEGAL">LEGAL - Organization/Entity (Legal Person)</option>
@@ -337,16 +437,33 @@
           <label>Name Identifier:</label>
           <div class="form-row">
             <div class="form-section">
-              <label for="beneficiaryPrimaryIdentifier">Primary Identifier: <span class="required">*</span></label>
-              <input v-model="formData.beneficiary.name.nameIdentifier[0].primaryIdentifier" type="text" id="beneficiaryPrimaryIdentifier" required />
+              <label for="beneficiaryPrimaryIdentifier"
+                >Primary Identifier: <span class="required">*</span></label
+              >
+              <input
+                id="beneficiaryPrimaryIdentifier"
+                v-model="formData.beneficiary.name.nameIdentifier[0].primaryIdentifier"
+                type="text"
+                required
+              />
             </div>
             <div class="form-section">
               <label for="beneficiarySecondaryIdentifier">Secondary Identifier:</label>
-              <input v-model="formData.beneficiary.name.nameIdentifier[0].secondaryIdentifier" type="text" id="beneficiarySecondaryIdentifier" />
+              <input
+                id="beneficiarySecondaryIdentifier"
+                v-model="formData.beneficiary.name.nameIdentifier[0].secondaryIdentifier"
+                type="text"
+              />
             </div>
             <div class="form-section">
-              <label for="beneficiaryNameIdentifierType">Name Identifier Type: <span class="required">*</span></label>
-              <select v-model="formData.beneficiary.name.nameIdentifier[0].nameIdentifierType" id="beneficiaryNameIdentifierType" required>
+              <label for="beneficiaryNameIdentifierType"
+                >Name Identifier Type: <span class="required">*</span></label
+              >
+              <select
+                id="beneficiaryNameIdentifierType"
+                v-model="formData.beneficiary.name.nameIdentifier[0].nameIdentifierType"
+                required
+              >
                 <option value="">Select...</option>
                 <option value="LEGL">LEGL - Legal/Registered Name</option>
                 <option value="ALIA">ALIA - Alias Name</option>
@@ -358,11 +475,19 @@
         <div class="form-row">
           <div class="form-section">
             <label for="beneficiaryCustomerIdentification">Customer Identification:</label>
-            <input v-model="formData.beneficiary.customerIdentification" type="text" id="beneficiaryCustomerIdentification" />
+            <input
+              id="beneficiaryCustomerIdentification"
+              v-model="formData.beneficiary.customerIdentification"
+              type="text"
+            />
           </div>
           <div class="form-section">
             <label for="beneficiaryAccountNumber">Account Number:</label>
-            <input v-model="formData.beneficiary.accountNumber" type="text" id="beneficiaryAccountNumber" />
+            <input
+              id="beneficiaryAccountNumber"
+              v-model="formData.beneficiary.accountNumber"
+              type="text"
+            />
           </div>
         </div>
       </div>
@@ -371,22 +496,30 @@
         <h3 class="form-group-title">Contact Information (Optional)</h3>
         <div class="form-section">
           <label for="complianceEmail">Compliance Email:</label>
-          <input v-model="formData.contact.complianceEmail" type="email" id="complianceEmail" />
+          <input id="complianceEmail" v-model="formData.contact.complianceEmail" type="email" />
         </div>
         <div class="form-section">
           <label for="supportReference">Support Reference:</label>
-          <input v-model="formData.contact.supportReference" type="text" id="supportReference" />
+          <input id="supportReference" v-model="formData.contact.supportReference" type="text" />
         </div>
       </div>
     </div>
 
-    <button 
+    <button
       v-if="sdk"
-      @click="activeTab === 'inbound' ? getMessage() : sendData()" 
       :disabled="loading"
       class="send-button"
+      @click="activeTab === 'inbound' ? getMessage() : sendData()"
     >
-      {{ loading ? (activeTab === 'inbound' ? 'Getting...' : 'Sending...') : (activeTab === 'inbound' ? 'Get Message' : 'Send Message') }}
+      {{
+        loading
+          ? activeTab === 'inbound'
+            ? 'Getting...'
+            : 'Sending...'
+          : activeTab === 'inbound'
+            ? 'Get Message'
+            : 'Send Message'
+      }}
     </button>
 
     <div v-if="result" :class="['result', result.type]">
@@ -398,7 +531,13 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue';
-import { TravelSDKClient, type VaspKeys, APIError } from '@cokeeps/travel-rule-sdk';
+import {
+  TravelSDKClient,
+  type VaspKeys,
+  APIError,
+  AccessTokenResponse,
+  MessageFormData,
+} from '@cokeeps/travel-rule-sdk';
 
 const endpoint = ref('');
 const sdk = ref<TravelSDKClient | null>(null);
@@ -406,10 +545,14 @@ const activeTab = ref<'inbound' | 'outbound'>('inbound');
 const messageId = ref('');
 const fileName = ref('');
 const fileJsonData = ref<VaspKeys | null>(null);
-const accessToken = ref<any>(null);
-const accessTokenResult = ref<{ type: 'success' | 'error'; message: string; data?: any } | null>(null);
+const accessToken = ref<AccessTokenResponse | null>(null);
+const accessTokenResult = ref<{
+  type: 'success' | 'error';
+  message: string;
+  data?: unknown;
+} | null>(null);
 const loading = ref(false);
-const result = ref<{ type: 'success' | 'error'; message: string; data?: any } | null>(null);
+const result = ref<{ type: 'success' | 'error'; message: string; data?: unknown } | null>(null);
 const tokenExpiresAt = ref<number | null>(null);
 const countdownInterval = ref<ReturnType<typeof setInterval> | null>(null);
 const currentTime = ref<number>(Date.now());
@@ -431,69 +574,77 @@ const formData = ref({
     originatingAddress: '',
     beneficiaryAddress: '',
     memoOrTag: '',
-    internalRef: ''
+    internalRef: '',
   },
   originatingVasp: {
     vaspName: '',
     vaspIdentifier: {
       type: undefined,
-      value: ''
-    }
+      value: '',
+    },
   },
   beneficiaryVasp: {
     vaspName: '',
     vaspIdentifier: {
       type: undefined,
-      value: ''
-    }
+      value: '',
+    },
   },
   originator: {
     type: undefined,
     name: {
-      nameIdentifier: [{
-        primaryIdentifier: '',
-        secondaryIdentifier: '',
-        nameIdentifierType: undefined
-      }]
+      nameIdentifier: [
+        {
+          primaryIdentifier: '',
+          secondaryIdentifier: '',
+          nameIdentifierType: undefined,
+        },
+      ],
     },
     customerIdentification: '',
     accountNumber: '',
-    geographicAddress: [{
-      addressType: undefined,
-      streetName: '',
-      buildingNumber: '',
-      townName: '',
-      countrySubDivision: '',
-      postCode: '',
-      country: ''
-    }],
-    nationalIdentification: [{
-      nationalIdentifier: '',
-      nationalIdentifierType: undefined,
-      countryOfIssue: ''
-    }],
+    geographicAddress: [
+      {
+        addressType: undefined,
+        streetName: '',
+        buildingNumber: '',
+        townName: '',
+        countrySubDivision: '',
+        postCode: '',
+        country: '',
+      },
+    ],
+    nationalIdentification: [
+      {
+        nationalIdentifier: '',
+        nationalIdentifierType: undefined,
+        countryOfIssue: '',
+      },
+    ],
     dateAndPlaceOfBirth: {
       birthDate: '',
       cityOfBirth: '',
-      countryOfBirth: ''
-    }
+      countryOfBirth: '',
+    },
   },
   beneficiary: {
     type: undefined,
     name: {
-      nameIdentifier: [{
-        primaryIdentifier: '',
-        secondaryIdentifier: '',
-        nameIdentifierType: undefined
-      }]
+      nameIdentifier: [
+        {
+          primaryIdentifier: '',
+          secondaryIdentifier: '',
+          nameIdentifierType: undefined,
+        },
+      ],
     },
     customerIdentification: '',
-    accountNumber: ''
+    accountNumber: '',
   },
   contact: {
     complianceEmail: '',
-    supportReference: ''
-  }
+    supportReference: '',
+  },
 });
 
 const createdAtDatetimeLocal = computed({
@@ -525,7 +676,7 @@ const createdAtDatetimeLocal = computed({
     } catch {
       formData.value.createdAt = getCurrentISOTimestamp();
     }
-  }
+  },
 });
 
 const handleFileUpload = (event: Event) => {
@@ -539,11 +690,11 @@ const handleFileUpload = (event: Event) => {
 
   const file = (event.target as HTMLInputElement).files?.[0];
   if (!file) {
-        fileJsonData.value = null;
-        fileName.value = '';
-        accessToken.value = null;
-        accessTokenResult.value = null;
-        tokenExpiresAt.value = null;
+    fileJsonData.value = null;
+    fileName.value = '';
+    accessToken.value = null;
+    accessTokenResult.value = null;
+    tokenExpiresAt.value = null;
     return;
   }
 
@@ -555,9 +706,9 @@ const handleFileUpload = (event: Event) => {
       try {
         const jsonText = e.target.result as string;
         const parsed = JSON.parse(jsonText);
-        
+
         const validatedKeys = sdk.value!.validateVaspKeys(parsed);
-        
+
         fileJsonData.value = validatedKeys;
         sdk.value!.setVaspKeys(validatedKeys);
         accessToken.value = null;
@@ -571,7 +722,8 @@ const handleFileUpload = (event: Event) => {
         console.error('Error parsing or validating JSON:', error);
         result.value = {
           type: 'error',
-          message: error instanceof Error ? error.message : 'Invalid JSON file or validation failed',
+          message:
+            error instanceof Error ? error.message : 'Invalid JSON file or validation failed',
         };
         fileJsonData.value = null;
         fileName.value = '';
@@ -593,32 +745,33 @@ const getMessage = async () => {
     return;
   }
 
-  if(!fileJsonData.value) {
+  if (!fileJsonData.value) {
     result.value = {
       type: 'error',
       message: 'Please upload a certificate file',
     };
     return;
   }
-  
-  if(!messageId.value) {
+
+  if (!messageId.value) {
     result.value = {
       type: 'error',
       message: 'Please enter a message ID',
     };
     return;
   }
-  
+
   try {
     loading.value = true;
     const message = await sdk.value.getMessageWithAuth(fileJsonData.value, messageId.value);
-    
+
     if (sdk.value.getVaspKeys()) {
       const token = await sdk.value.getAccessToken();
       accessToken.value = token;
       if (token && token.expires_in) {
-        const expiresInSeconds = typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
-        tokenExpiresAt.value = Date.now() + (expiresInSeconds * 1000);
+        const expiresInSeconds =
+          typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
+        tokenExpiresAt.value = Date.now() + expiresInSeconds * 1000;
         currentTime.value = Date.now();
       }
     }
@@ -633,7 +786,9 @@ const getMessage = async () => {
       let message = error.errorDescription || error.message;
       if (error.isValidationError() && error.getValidationErrors()) {
         const validationErrors = error.getValidationErrors()!;
-        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        const fieldErrors = validationErrors
+          .map((err) => `${err.field}: ${err.message}`)
+          .join('\n');
         message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
       }
       result.value = {
@@ -657,26 +812,26 @@ const getMessage = async () => {
   }
 };
 
-const convertEmptyStringsToUndefined = (obj: any): any => {
+const convertEmptyStringsToUndefined = <T,>(obj: T | undefined): T | undefined => {
   if (obj === null || obj === undefined) {
     return obj;
   }
-  
+
   if (typeof obj === 'string') {
     return obj === '' ? undefined : obj;
   }
-  
+
   if (Array.isArray(obj)) {
-    const processed = obj.map(item => convertEmptyStringsToUndefined(item));
-    
-    const filtered = processed.filter(item => item !== undefined);
-    return filtered.length === 0 ? undefined : filtered;
+    const processed = obj.map((item) => convertEmptyStringsToUndefined(item));
+
+    const filtered = processed.filter((item) => item !== undefined);
+    return filtered.length === 0 ? undefined : (filtered as T);
   }
-  
+
   if (typeof obj === 'object' && !(obj instanceof File) && !(obj instanceof Blob)) {
-    const result: any = {};
+    const result: Partial<T> = {};
     let hasAnyValue = false;
-    
+
     for (const key in obj) {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = convertEmptyStringsToUndefined(obj[key]);
@@ -686,13 +841,13 @@ const convertEmptyStringsToUndefined = (obj: any): any => {
         }
       }
     }
-    
+
     if (!hasAnyValue) {
       return undefined;
     }
-    return result;
+    return result as T;
   }
-  
+
   return obj;
 };
 
@@ -705,25 +860,29 @@ const sendData = async () => {
     return;
   }
 
-  if(!fileJsonData.value) {
+  if (!fileJsonData.value) {
     result.value = {
       type: 'error',
       message: 'Please upload a certificate file',
     };
     return;
   }
-  
+
   try {
     loading.value = true;
     const cleanedData = convertEmptyStringsToUndefined(formData.value);
-    const message = await sdk.value.sendMessageWithAuth(fileJsonData.value, cleanedData as any);
-    
+    const message = await sdk.value.sendMessageWithAuth(
+      fileJsonData.value,
+      cleanedData as unknown as MessageFormData,
+    );
+
     if (sdk.value.getVaspKeys()) {
       const token = await sdk.value.getAccessToken();
       accessToken.value = token;
       if (token && token.expires_in) {
-        const expiresInSeconds = typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
-        tokenExpiresAt.value = Date.now() + (expiresInSeconds * 1000);
+        const expiresInSeconds =
+          typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
+        tokenExpiresAt.value = Date.now() + expiresInSeconds * 1000;
         currentTime.value = Date.now();
       }
     }
@@ -738,7 +897,9 @@ const sendData = async () => {
       let message = error.errorDescription || error.message;
       if (error.isValidationError() && error.getValidationErrors()) {
         const validationErrors = error.getValidationErrors()!;
-        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        const fieldErrors = validationErrors
+          .map((err) => `${err.field}: ${err.message}`)
+          .join('\n');
         message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
       }
       result.value = {
@@ -770,10 +931,10 @@ const initializeOrUpdateEndpoint = () => {
     };
     return;
   }
-  
+
   try {
     if (!sdk.value) {
-      sdk.value = new TravelSDKClient({ 
+      sdk.value = new TravelSDKClient({
         endpoint: endpoint.value,
         debug: true,
       });
@@ -805,14 +966,14 @@ const getAccessToken = async () => {
     return;
   }
 
-  if(!fileJsonData.value) {
+  if (!fileJsonData.value) {
     accessTokenResult.value = {
       type: 'error',
       message: 'Please upload a certificate file',
     };
     return;
   }
-  
+
   try {
     loading.value = true;
 
@@ -820,8 +981,9 @@ const getAccessToken = async () => {
     accessToken.value = token;
 
     if (token && token.expires_in) {
-      const expiresInSeconds = typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
-      tokenExpiresAt.value = Date.now() + (expiresInSeconds * 1000);
+      const expiresInSeconds =
+        typeof token.expires_in === 'number' ? token.expires_in : parseInt(token.expires_in);
+      tokenExpiresAt.value = Date.now() + expiresInSeconds * 1000;
       currentTime.value = Date.now();
     } else {
       tokenExpiresAt.value = null;
@@ -840,7 +1002,9 @@ const getAccessToken = async () => {
       let message = error.errorDescription || error.message;
       if (error.isValidationError() && error.getValidationErrors()) {
         const validationErrors = error.getValidationErrors()!;
-        const fieldErrors = validationErrors.map(err => `${err.field}: ${err.message}`).join('\n');
+        const fieldErrors = validationErrors
+          .map((err) => `${err.field}: ${err.message}`)
+          .join('\n');
         message = `${message}\n\nValidation Errors:\n${fieldErrors}`;
       }
       accessTokenResult.value = {
@@ -866,14 +1030,14 @@ const getAccessToken = async () => {
 
 const countdownDisplay = computed(() => {
   if (!tokenExpiresAt.value) return null;
-  
+
   const remaining = Math.max(0, tokenExpiresAt.value - currentTime.value);
-  
+
   if (remaining === 0) return 'Expired';
-  
+
   const minutes = Math.floor(remaining / 60000);
   const seconds = Math.floor((remaining % 60000) / 1000);
-  
+
   return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 });
 
@@ -888,7 +1052,6 @@ onUnmounted(() => {
     clearInterval(countdownInterval.value);
   }
 });
-
 </script>
 
 <style scoped>
@@ -924,11 +1087,11 @@ label {
   margin-left: 2px;
 }
 
-input[type="text"],
-input[type="email"],
-input[type="date"],
-input[type="datetime-local"],
-input[type="file"],
+input[type='text'],
+input[type='email'],
+input[type='date'],
+input[type='datetime-local'],
+input[type='file'],
 select {
   width: 100%;
   padding: 12px;
@@ -939,13 +1102,13 @@ select {
   box-sizing: border-box;
 }
 
-input[type="text"]:focus,
-input[type="email"]:focus,
-input[type="date"]:focus,
-input[type="datetime-local"]:focus,
+input[type='text']:focus,
+input[type='email']:focus,
+input[type='date']:focus,
+input[type='datetime-local']:focus,
 select:focus {
   outline: none;
-  border-color: rgb(195 253 205/var(--tw-text-opacity,1));
+  border-color: rgb(195 253 205 / var(--tw-text-opacity, 1));
 }
 
 select {
@@ -972,7 +1135,9 @@ select {
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .send-button:hover:not(:disabled) {
@@ -999,7 +1164,9 @@ select {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
   width: 100%;
 }
 
@@ -1088,7 +1255,7 @@ select {
 
 .tab-button.active {
   color: rgb(1 85 58 / var(--tw-text-opacity, 1)) !important;
-  border-bottom-color: rgb(195 253 205/var(--tw-text-opacity,1));
+  border-bottom-color: rgb(195 253 205 / var(--tw-text-opacity, 1));
 }
 
 .shared-section {
@@ -1113,7 +1280,7 @@ select {
   font-weight: 600;
   margin-bottom: 20px;
   padding-bottom: 10px;
-  border-bottom: 2px solid rgb(195 253 205/var(--tw-text-opacity,1));
+  border-bottom: 2px solid rgb(195 253 205 / var(--tw-text-opacity, 1));
 }
 
 .form-row {
