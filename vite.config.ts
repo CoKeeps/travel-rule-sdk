@@ -5,6 +5,18 @@ import { resolve } from 'path';
 export default defineConfig({
   root: 'widget',
   plugins: [vue()],
+  esbuild: {
+    supported: {
+      destructuring: true,
+    },
+  },
+  optimizeDeps: {
+    esbuildOptions: {
+      supported: {
+        destructuring: true,
+      },
+    },
+  },
   build: {
     outDir: '../dist-widget',
     emptyOutDir: true,

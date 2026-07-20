@@ -92,7 +92,7 @@
     "zod": "^4.3.4"
   },
   "overrides": {
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "rollup": "4.60.4",
     "postcss": "8.5.15",
     "follow-redirects": "1.16.0",
